@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
+import { motion, AnimatePresence } from "framer-motion";
+import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 
-const tripsData = [
+const initialTrips = [
   {
     id: 1,
     name: "Goa Vacation",
@@ -38,39 +38,66 @@ const statusStyles = {
 };
 
 const Trips = () => {
+  const [trips, setTrips] = useState(initialTrips);
+  const [showModal, setShowModal] = useState(false);
+
+  const [form, setForm] = useState({
+    name: "",
+    startDate: "",
+    endDate: "",
+    budget: "",
+  });
+
+  const handleAddTrip = () => {
+    if (!form.name || !form.startDate || !form.endDate || !form.budget) return;
+
+    setTrips([
+      ...trips,
+      {
+        id: Date.now(),
+        ...form,
+        budget: Number(form.budget),
+        status: "upcoming",
+      },
+    ]);
+
+    setForm({ name: "", startDate: "", endDate: "", budget: "" });
+    setShowModal(false);
+  };
+
   return (
-    <div>
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
 
       <div className="flex-grow max-w-7xl mx-auto px-6 py-10">
-        {/* PAGE HEADER */}
+        {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <h1 className="text-3xl font-bold text-slate-800">
             Your Trips
           </h1>
 
-          <button className="mt-4 sm:mt-0 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition">
+          <button
+            onClick={() => setShowModal(true)}
+            className="mt-4 sm:mt-0 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
+          >
             + Add New Trip
           </button>
         </div>
 
         {/* TRIPS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {tripsData.map((trip) => (
+          {trips.map((trip) => (
             <motion.div
               key={trip.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border
-                ${
-                  trip.status === "active"
-                    ? "border-emerald-400"
-                    : "border-transparent"
-                }`}
+              className={`bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border ${
+                trip.status === "active"
+                  ? "border-emerald-400"
+                  : "border-transparent"
+              }`}
             >
-              {/* STATUS */}
               <span
                 className={`inline-block px-3 py-1 text-xs rounded-full font-medium mb-4 ${
                   statusStyles[trip.status]
@@ -79,7 +106,6 @@ const Trips = () => {
                 {trip.status.toUpperCase()}
               </span>
 
-              {/* TRIP INFO */}
               <h2 className="text-xl font-bold text-slate-800 mb-1">
                 {trip.name}
               </h2>
@@ -95,8 +121,7 @@ const Trips = () => {
                 </span>
               </p>
 
-              {/* ACTION */}
-              <Link to={`/trip/${trip.id}`}>
+              <Link to={`/trips/${trip.id}`}>
                 <button className="w-full py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold transition">
                   View Trip Details
                 </button>
@@ -106,10 +131,84 @@ const Trips = () => {
         </div>
       </div>
 
+      {/* ADD TRIP MODAL */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl"
+            >
+              <h3 className="text-xl font-bold text-slate-800 mb-4">
+                Add New Trip
+              </h3>
+
+              <input
+                placeholder="Trip name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
+                className="w-full mb-3 px-4 py-2 rounded-xl border"
+              />
+
+              <input
+                type="date"
+                value={form.startDate}
+                onChange={(e) =>
+                  setForm({ ...form, startDate: e.target.value })
+                }
+                className="w-full mb-3 px-4 py-2 rounded-xl border"
+              />
+
+              <input
+                type="date"
+                value={form.endDate}
+                onChange={(e) =>
+                  setForm({ ...form, endDate: e.target.value })
+                }
+                className="w-full mb-3 px-4 py-2 rounded-xl border"
+              />
+
+              <input
+                type="number"
+                placeholder="Budget"
+                value={form.budget}
+                onChange={(e) =>
+                  setForm({ ...form, budget: e.target.value })
+                }
+                className="w-full mb-4 px-4 py-2 rounded-xl border"
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 text-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddTrip}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold"
+                >
+                  Add Trip
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Footer />
     </div>
-    </div>
-  )
-}
+  );
+};
 
-export default Trips
+export default Trips;

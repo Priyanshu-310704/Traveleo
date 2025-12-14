@@ -1,12 +1,44 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiMail, FiLock } from "react-icons/fi";
 import Brand from "../components/Brand";
+import { loginUser } from "../api/auth.api"; // 🔗 backend API
 
 const Login = () => {
+  const navigate = useNavigate();
+
+  // ✅ state added
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // ✅ backend-connected handler
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await loginUser({ email, password });
+
+      // ✅ store JWT token
+      localStorage.setItem("token", res.data.token);
+
+      // ✅ redirect
+      navigate("/dashboard");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Invalid email or password"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-600 via-teal-600 to-green-500 flex flex-col items-center justify-center px-4">
+      
       {/* BRAND ABOVE CARD */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -31,12 +63,21 @@ const Login = () => {
           Login to continue managing your trips
         </p>
 
+        {/* ERROR MESSAGE */}
+        {error && (
+          <p className="mb-4 text-sm text-red-200 text-center">
+            {error}
+          </p>
+        )}
+
         {/* EMAIL */}
         <div className="relative mb-4">
           <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="email"
             placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -47,6 +88,8 @@ const Login = () => {
           <input
             type="password"
             placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -54,9 +97,11 @@ const Login = () => {
         {/* LOGIN BUTTON */}
         <motion.button
           whileTap={{ scale: 0.97 }}
+          onClick={handleLogin}
+          disabled={loading}
           className="w-full py-3 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </motion.button>
 
         {/* SIGNUP LINK */}
