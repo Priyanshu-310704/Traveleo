@@ -17,7 +17,12 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
     const loadCategories = async () => {
       try {
         const res = await getCategories();
-        setCategories(res.data.categories || []);
+        const list =
+          res.data.categories ||
+          res.data.data ||
+          res.data ||
+          [];
+        setCategories(list);
       } catch (error) {
         console.error("Category load error:", error);
         setCategories([]);
@@ -33,7 +38,6 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
     }
 
     setLoading(true);
-
     try {
       await createExpense({
         trip_id: tripId,
@@ -43,10 +47,9 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
         expense_date: date,
       });
 
-      onSuccess(); // refresh dashboard
+      onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Create expense error:", error);
+    } catch {
       alert("Failed to add expense");
     } finally {
       setLoading(false);
@@ -56,22 +59,13 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
   return (
     <div
       onClick={onClose}
-      className="
-        fixed inset-0 z-50 flex items-center justify-center px-4
-        bg-gradient-to-br from-emerald-900/50 via-teal-900/50 to-green-900/50
-        backdrop-blur-md
-      "
+      className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-900/50 backdrop-blur-md px-4"
     >
       <motion.div
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="
-          w-full max-w-md rounded-3xl
-          bg-emerald-100/20 backdrop-blur-xl
-          border border-emerald-200/30 shadow-2xl
-          p-6
-        "
+        className="w-full max-w-md rounded-3xl bg-emerald-100/20 backdrop-blur-xl border border-emerald-200/30 shadow-2xl p-6"
       >
         <div className="flex justify-between mb-4">
           <h2 className="text-lg font-bold text-white">Add Expense</h2>
@@ -84,7 +78,7 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/85 outline-none"
+            className="w-full px-4 py-3 rounded-xl bg-white/90"
           >
             <option value="">Select category *</option>
             {categories.map((cat) => (
@@ -99,7 +93,7 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
             placeholder="Amount *"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/85 outline-none"
+            className="w-full px-4 py-3 rounded-xl bg-white/90"
           />
 
           <input
@@ -107,21 +101,21 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/85 outline-none"
+            className="w-full px-4 py-3 rounded-xl bg-white/90"
           />
 
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/85 outline-none"
+            className="w-full px-4 py-3 rounded-xl bg-white/90"
           />
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-white/80 hover:bg-white/10"
+            className="px-4 py-2 rounded-xl text-white/80"
           >
             Cancel
           </button>

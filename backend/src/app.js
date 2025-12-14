@@ -32,10 +32,9 @@ app.use("/api", expenseRoute);
 
 import budgetRoute from "./routes/budget.route.js";//budget
 
-app.use("/api", budgetRoute);
-
 import insightRoute from "./routes/insight.route.js";//insights
 
+app.use("/api", budgetRoute);
 app.use("/api", insightRoute);
 
 
