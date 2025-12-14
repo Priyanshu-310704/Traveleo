@@ -1,10 +1,11 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Brand from "./Brand";
 import { motion } from "framer-motion";
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLink = (path) => {
     const isActive = location.pathname === path;
@@ -16,6 +17,12 @@ const Navbar = () => {
           : "text-slate-600 hover:text-emerald-600"
       }
     `;
+  };
+
+  // ✅ LOGOUT HANDLER
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // 🔑 clear JWT
+    navigate("/login"); // 🔁 redirect
   };
 
   return (
@@ -46,18 +53,18 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* LOGOUT */}
-        <Link
-          to="/login"
+        {/* LOGOUT BUTTON */}
+        <button
+          onClick={handleLogout}
           className="
             px-4 py-2 rounded-lg text-sm font-semibold
-            text-emerald-700
-            hover:bg-emerald-100
+            text-red-600
+            hover:bg-red-100
             transition
           "
         >
           Logout
-        </Link>
+        </button>
       </div>
     </motion.nav>
   );

@@ -26,6 +26,9 @@ const Login = () => {
       // ✅ store JWT token
       localStorage.setItem("token", res.data.token);
 
+      // ✅ store logged-in user info
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
       // ✅ redirect
       navigate("/dashboard");
     } catch (err) {
