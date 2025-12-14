@@ -1,12 +1,48 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiMail, FiLock, FiUser, FiPhone } from "react-icons/fi";
 import Brand from "../components/Brand";
+import { signupUser } from "../api/auth.api";
 
 const Signup = () => {
+  const navigate = useNavigate();
+
+  // ✅ states
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState(""); // UI only
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // ✅ backend-connected signup
+  const handleSignup = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      await signupUser({
+        name,
+        email,
+        password, // ⚠️ phone NOT sent (backend doesn’t accept it)
+      });
+
+      // ✅ redirect to login after successful signup
+      navigate("/login");
+    } catch (err) {
+      setError(
+        err.response?.data?.error || "Signup failed. Try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-600 via-teal-600 to-green-500 flex flex-col items-center justify-center px-4">
+      
       {/* BRAND ABOVE CARD */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -31,22 +67,33 @@ const Signup = () => {
           Start planning smarter trips
         </p>
 
+        {/* ERROR */}
+        {error && (
+          <p className="mb-4 text-sm text-red-200 text-center">
+            {error}
+          </p>
+        )}
+
         {/* Full Name */}
         <div className="relative mb-3">
           <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             placeholder="Full name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
-        {/* Phone Number */}
+        {/* Phone Number (UI ONLY) */}
         <div className="relative mb-3">
           <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="tel"
             placeholder="Phone number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -57,6 +104,8 @@ const Signup = () => {
           <input
             type="email"
             placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -67,15 +116,20 @@ const Signup = () => {
           <input
             type="password"
             placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
+        {/* SIGNUP BUTTON */}
         <motion.button
           whileTap={{ scale: 0.97 }}
+          onClick={handleSignup}
+          disabled={loading}
           className="w-full py-3 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition"
         >
-          Sign Up
+          {loading ? "Creating account..." : "Sign Up"}
         </motion.button>
 
         <p className="text-center text-sm text-green-100 mt-5">
