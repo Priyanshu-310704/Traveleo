@@ -19,6 +19,14 @@ import expenseRoute from "./routes/expense.route.js";//expenses
 
 app.use("/api", expenseRoute);
 
+import budgetRoute from "./routes/budget.route.js";//budget
+
+app.use("/api", budgetRoute);
+
+import insightRoute from "./routes/insight.route.js";//insights
+
+app.use("/api", insightRoute);
+
 
 import healthRoute from './routes/health.route.js'
 
