@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FiX } from "react-icons/fi";
 import { getCategories } from "../api/category.api";
 import { createExpense } from "../api/expense.api";
+import { createCategory } from "../api/category.api";
 
 const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
   const [categories, setCategories] = useState([]);
@@ -11,17 +12,14 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
 
   /* LOAD CATEGORIES */
   useEffect(() => {
     const loadCategories = async () => {
       try {
         const res = await getCategories();
-        const list =
-          res.data.categories ||
-          res.data.data ||
-          res.data ||
-          [];
+        const list = res.data.categories || res.data.data || res.data || [];
         setCategories(list);
       } catch (error) {
         console.error("Category load error:", error);
@@ -32,16 +30,31 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
   }, []);
 
   const handleSubmit = async () => {
-    if (!categoryId || !amount || !date) {
+    if (!amount || !date) {
       alert("Please fill required fields");
       return;
     }
 
     setLoading(true);
+
     try {
+      let finalCategoryId = categoryId;
+
+      /* 🆕 Create category if user typed new one */
+      if (!finalCategoryId && newCategory.trim()) {
+        const catRes = await createCategory({ name: newCategory });
+        finalCategoryId = catRes.data.category.id;
+      }
+
+      if (!finalCategoryId) {
+        alert("Please select or add a category");
+        setLoading(false);
+        return;
+      }
+
       await createExpense({
         trip_id: tripId,
-        category_id: Number(categoryId),
+        category_id: finalCategoryId,
         amount: Number(amount),
         description,
         expense_date: date,
@@ -49,7 +62,8 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
 
       onSuccess();
       onClose();
-    } catch {
+    } catch (error) {
+      console.error(error);
       alert("Failed to add expense");
     } finally {
       setLoading(false);
@@ -87,6 +101,13 @@ const AddExpenseModal = ({ tripId, onClose, onSuccess }) => {
               </option>
             ))}
           </select>
+          <input
+            type="text"
+            placeholder="Or add new category"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-white/85 outline-none"
+          />
 
           <input
             type="number"

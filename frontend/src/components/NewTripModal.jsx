@@ -1,16 +1,22 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiX, FiMapPin, FiCalendar } from "react-icons/fi";
+import { FiX, FiMapPin, FiCalendar, FiDollarSign } from "react-icons/fi";
 
 const NewTripModal = ({ onClose, onCreate }) => {
   const [title, setTitle] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [budget, setBudget] = useState("");
 
   const handleSubmit = () => {
-    if (!title || !startDate || !endDate) {
-      alert("Please fill required fields");
+    if (!title || !startDate || !endDate || !budget) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    if (Number(budget) <= 0) {
+      alert("Budget must be greater than 0");
       return;
     }
 
@@ -19,6 +25,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
       destination,
       start_date: startDate,
       end_date: endDate,
+      total_budget: Number(budget), // 🔥 IMPORTANT
     });
   };
 
@@ -35,7 +42,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
         className="
           w-full max-w-md
@@ -49,9 +56,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
       >
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">
-            Create New Trip
-          </h2>
+          <h2 className="text-xl font-bold text-white">Create New Trip</h2>
           <button
             onClick={onClose}
             className="text-white/70 hover:text-white transition"
@@ -62,6 +67,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
 
         {/* FORM */}
         <div className="space-y-4">
+          {/* TITLE */}
           <input
             type="text"
             placeholder="Trip title *"
@@ -75,6 +81,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
             "
           />
 
+          {/* DESTINATION */}
           <div className="relative">
             <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
             <input
@@ -91,6 +98,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
             />
           </div>
 
+          {/* DATES */}
           <div className="grid grid-cols-2 gap-3">
             <div className="relative">
               <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
@@ -121,6 +129,23 @@ const NewTripModal = ({ onClose, onCreate }) => {
                 "
               />
             </div>
+          </div>
+
+          {/* BUDGET */}
+          <div className="relative">
+            <FiDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
+            <input
+              type="number"
+              placeholder="Trip Budget (₹) *"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="
+                w-full pl-11 pr-4 py-3 rounded-xl
+                bg-white/85 text-slate-800 placeholder-slate-500
+                outline-none
+                focus:ring-2 focus:ring-emerald-500
+              "
+            />
           </div>
         </div>
 

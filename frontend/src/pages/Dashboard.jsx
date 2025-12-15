@@ -55,22 +55,27 @@ const Dashboard = () => {
       const trip = trips[0];
       setActiveTrip(trip);
 
-      /* Budget */
+      /* ===== BUDGET (FIXED) ===== */
       try {
         const budgetRes = await getBudgetByTrip(trip.id);
-        setBudget(Number(budgetRes.data?.total_budget || 0));
+
+        if (budgetRes.data?.budget) {
+          setBudget(Number(budgetRes.data.budget.total_budget || 0));
+        } else {
+          setBudget(0);
+        }
       } catch {
         setBudget(0);
       }
 
-      /* Expenses */
+      /* ===== EXPENSES ===== */
       try {
         const expenseRes = await getExpensesByTrip(trip.id);
         const expenses = expenseRes.data?.expenses || [];
 
         const categoryMap = {};
         expenses.forEach((exp) => {
-          const category = exp.category || "Other"; // ✅ FIXED
+          const category = exp.category || "Other";
           categoryMap[category] =
             (categoryMap[category] || 0) + Number(exp.amount);
         });
@@ -85,7 +90,7 @@ const Dashboard = () => {
         setExpenseData([]);
       }
 
-      /* Insights */
+      /* ===== INSIGHTS ===== */
       try {
         const insightRes = await getTripInsights(trip.id);
         setInsights(insightRes.data?.insights || []);
@@ -119,8 +124,7 @@ const Dashboard = () => {
 
   const totalSpent = expenseData.reduce((s, e) => s + e.value, 0);
   const remaining = Math.max(budget - totalSpent, 0);
-  const usagePercent =
-    budget > 0 ? Math.round((totalSpent / budget) * 100) : 0;
+  const usagePercent = budget > 0 ? Math.round((totalSpent / budget) * 100) : 0;
 
   if (loading) {
     return (
@@ -139,9 +143,7 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800">
             Welcome,{" "}
-            <span className="text-emerald-600">
-              {user?.name || "Traveler"}
-            </span>
+            <span className="text-emerald-600">{user?.name || "Traveler"}</span>
           </h1>
 
           <div className="flex gap-3 mt-4 sm:mt-0">
@@ -167,10 +169,18 @@ const Dashboard = () => {
         {activeTrip ? (
           <div className="bg-white/70 p-6 rounded-2xl shadow-sm mb-10">
             <p className="text-sm text-slate-500">Active Trip</p>
+
             <h2 className="text-2xl font-bold text-emerald-700">
               {activeTrip.title}
+              {activeTrip.destination && (
+                <span className="text-slate-500 font-medium">
+                  {" "}
+                  • {activeTrip.destination}
+                </span>
+              )}
             </h2>
-            <p className="text-sm text-slate-600">
+
+            <p className="text-sm text-slate-600 mt-1">
               {formatDate(activeTrip.start_date)} –{" "}
               {formatDate(activeTrip.end_date)}
             </p>
@@ -184,8 +194,16 @@ const Dashboard = () => {
         {/* SUMMARY */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <SummaryCard title="Budget" value={`₹${budget}`} />
-          <SummaryCard title="Spent" value={`₹${totalSpent}`} color="text-red-500" />
-          <SummaryCard title="Remaining" value={`₹${remaining}`} color="text-emerald-600" />
+          <SummaryCard
+            title="Spent"
+            value={`₹${totalSpent}`}
+            color="text-red-500"
+          />
+          <SummaryCard
+            title="Remaining"
+            value={`₹${remaining}`}
+            color="text-emerald-600"
+          />
         </div>
 
         {/* BUDGET BAR */}
@@ -205,7 +223,9 @@ const Dashboard = () => {
         {/* CHARTS */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
           <ChartCard title="Expense Distribution">
-            {expenseData.length === 0 ? <Placeholder /> : (
+            {expenseData.length === 0 ? (
+              <Placeholder />
+            ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
                   <Pie data={expenseData} dataKey="value" nameKey="name">
@@ -220,7 +240,9 @@ const Dashboard = () => {
           </ChartCard>
 
           <ChartCard title="Category-wise Spending">
-            {expenseData.length === 0 ? <Placeholder /> : (
+            {expenseData.length === 0 ? (
+              <Placeholder />
+            ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={expenseData}>
                   <XAxis dataKey="name" />
@@ -243,7 +265,9 @@ const Dashboard = () => {
           ) : (
             <ul className="space-y-2">
               {insights.map((tip, i) => (
-                <li key={i} className="text-sm">• {tip}</li>
+                <li key={i} className="text-sm">
+                  • {tip}
+                </li>
               ))}
             </ul>
           )}
