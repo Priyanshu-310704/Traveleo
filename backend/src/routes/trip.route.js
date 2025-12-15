@@ -104,4 +104,55 @@ router.get("/trips", authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * Delete a trip (and related data)
+ */
+router.delete("/trips/:tripId", authMiddleware, async (req, res) => {
+  const { tripId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    await pool.query("BEGIN");
+
+    // 1️⃣ Delete expenses
+    await pool.query(
+      "DELETE FROM expenses WHERE trip_id = $1 AND user_id = $2",
+      [tripId, userId]
+    );
+
+    // 2️⃣ Delete budget
+    await pool.query(
+      "DELETE FROM budgets WHERE trip_id = $1 AND user_id = $2",
+      [tripId, userId]
+    );
+
+    // 3️⃣ Delete trip
+    const result = await pool.query(
+      "DELETE FROM trips WHERE id = $1 AND user_id = $2 RETURNING *",
+      [tripId, userId]
+    );
+
+    if (result.rowCount === 0) {
+      await pool.query("ROLLBACK");
+      return res.status(404).json({
+        success: false,
+        message: "Trip not found",
+      });
+    }
+
+    await pool.query("COMMIT");
+
+    res.status(200).json({
+      success: true,
+      message: "Trip deleted successfully",
+    });
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 export default router;

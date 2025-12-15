@@ -47,30 +47,38 @@ const Dashboard = () => {
       const tripRes = await getTrips();
       const trips = tripRes.data?.trips || [];
 
-      if (trips.length === 0) {
+      // 🔥 FIND ONLY ACTIVE TRIP
+      const today = new Date();
+
+      const active = trips.find((trip) => {
+        return (
+          today >= new Date(trip.start_date) && today <= new Date(trip.end_date)
+        );
+      });
+
+      // ❌ NO ACTIVE TRIP → SHOW PLACEHOLDERS
+      if (!active) {
         setActiveTrip(null);
+        setBudget(0);
+        setExpenseData([]);
+        setInsights([]);
         return;
       }
 
-      const trip = trips[0];
-      setActiveTrip(trip);
+      // ✅ ACTIVE TRIP FOUND
+      setActiveTrip(active);
 
-      /* ===== BUDGET (FIXED) ===== */
+      /* ===== BUDGET ===== */
       try {
-        const budgetRes = await getBudgetByTrip(trip.id);
-
-        if (budgetRes.data?.budget) {
-          setBudget(Number(budgetRes.data.budget.total_budget || 0));
-        } else {
-          setBudget(0);
-        }
+        const budgetRes = await getBudgetByTrip(active.id);
+        setBudget(Number(budgetRes.data?.budget?.total_budget || 0));
       } catch {
         setBudget(0);
       }
 
       /* ===== EXPENSES ===== */
       try {
-        const expenseRes = await getExpensesByTrip(trip.id);
+        const expenseRes = await getExpensesByTrip(active.id);
         const expenses = expenseRes.data?.expenses || [];
 
         const categoryMap = {};
@@ -92,7 +100,7 @@ const Dashboard = () => {
 
       /* ===== INSIGHTS ===== */
       try {
-        const insightRes = await getTripInsights(trip.id);
+        const insightRes = await getTripInsights(active.id);
         setInsights(insightRes.data?.insights || []);
       } catch {
         setInsights([]);
@@ -186,7 +194,7 @@ const Dashboard = () => {
             </p>
           </div>
         ) : (
-          <div className="bg-white/70 p-6 rounded-2xl shadow-sm text-center">
+          <div className="bg-white/70 p-6 rounded-2xl shadow-sm text-center mb-10">
             No active trip yet.
           </div>
         )}

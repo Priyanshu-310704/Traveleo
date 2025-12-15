@@ -9,3 +9,6 @@ export const createTrip = (data) => {
     total_budget: data.total_budget, // 🔥 REQUIRED
   });
 };
+
+export const deleteTrip = (tripId) =>
+  api.delete(`/trips/${tripId}`);
