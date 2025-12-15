@@ -3,6 +3,7 @@ import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import { sendWelcomeMail } from "../services/mail.service.js";
 
 const router = Router();
 
@@ -112,6 +113,9 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
+    
+    sendWelcomeMail(user.email, user.name)
+    .catch(err => console.log("Mail error:", err.message));
 
     // 4️⃣ Response
     res.status(200).json({
