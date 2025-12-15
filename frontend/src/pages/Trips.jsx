@@ -1,35 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-
-const initialTrips = [
-  {
-    id: 1,
-    name: "Goa Vacation",
-    startDate: "10 Jan 2025",
-    endDate: "18 Jan 2025",
-    budget: 60000,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Manali Trip",
-    startDate: "5 Mar 2025",
-    endDate: "12 Mar 2025",
-    budget: 45000,
-    status: "upcoming",
-  },
-  {
-    id: 3,
-    name: "Jaipur Weekend",
-    startDate: "15 Dec 2024",
-    endDate: "18 Dec 2024",
-    budget: 30000,
-    status: "completed",
-  },
-];
+import NewTripModal from "../components/NewTripModal";
+import { getTrips } from "../api/dashboard.api";
+import { createTrip } from "../api/trip.api";
+import { formatDate } from "../utils/formatDate";
 
 const statusStyles = {
   active: "bg-emerald-100 text-emerald-700",
@@ -37,32 +14,44 @@ const statusStyles = {
   completed: "bg-slate-200 text-slate-700",
 };
 
+const getTripStatus = (start, end) => {
+  const today = new Date();
+  if (today < new Date(start)) return "upcoming";
+  if (today > new Date(end)) return "completed";
+  return "active";
+};
+
 const Trips = () => {
-  const [trips, setTrips] = useState(initialTrips);
-  const [showModal, setShowModal] = useState(false);
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showNewTripModal, setShowNewTripModal] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    startDate: "",
-    endDate: "",
-    budget: "",
-  });
+  /* ================= LOAD TRIPS ================= */
+  const loadTrips = async () => {
+    try {
+      setLoading(true);
+      const res = await getTrips();
+      setTrips(res.data?.trips || []);
+    } catch (error) {
+      console.error("Trips load error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleAddTrip = () => {
-    if (!form.name || !form.startDate || !form.endDate || !form.budget) return;
+  useEffect(() => {
+    loadTrips();
+  }, []);
 
-    setTrips([
-      ...trips,
-      {
-        id: Date.now(),
-        ...form,
-        budget: Number(form.budget),
-        status: "upcoming",
-      },
-    ]);
-
-    setForm({ name: "", startDate: "", endDate: "", budget: "" });
-    setShowModal(false);
+  /* ================= CREATE TRIP ================= */
+  const handleCreateTrip = async (tripData) => {
+    try {
+      await createTrip(tripData);
+      setShowNewTripModal(false);
+      await loadTrips(); // 🔥 refresh list instantly
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to create trip");
+    }
   };
 
   return (
@@ -72,139 +61,88 @@ const Trips = () => {
       <div className="flex-grow max-w-7xl mx-auto px-6 py-10">
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">
-            Your Trips
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-800">Your Trips</h1>
 
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => setShowNewTripModal(true)}
             className="mt-4 sm:mt-0 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
           >
             + Add New Trip
           </button>
         </div>
 
+        {/* LOADING */}
+        {loading && (
+          <p className="text-center text-slate-500">Loading trips...</p>
+        )}
+
+        {/* EMPTY STATE */}
+        {!loading && trips.length === 0 && (
+          <p className="text-center text-slate-500">
+            No trips yet. Create your first trip ✈️
+          </p>
+        )}
+
         {/* TRIPS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {trips.map((trip) => (
-            <motion.div
-              key={trip.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className={`bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border ${
-                trip.status === "active"
-                  ? "border-emerald-400"
-                  : "border-transparent"
-              }`}
-            >
-              <span
-                className={`inline-block px-3 py-1 text-xs rounded-full font-medium mb-4 ${
-                  statusStyles[trip.status]
+          {trips.map((trip) => {
+            const status = getTripStatus(
+              trip.start_date,
+              trip.end_date
+            );
+
+            return (
+              <motion.div
+                key={trip.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className={`bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border ${
+                  status === "active"
+                    ? "border-emerald-400"
+                    : "border-transparent"
                 }`}
               >
-                {trip.status.toUpperCase()}
-              </span>
-
-              <h2 className="text-xl font-bold text-slate-800 mb-1">
-                {trip.name}
-              </h2>
-
-              <p className="text-sm text-slate-500 mb-3">
-                {trip.startDate} – {trip.endDate}
-              </p>
-
-              <p className="text-sm text-slate-600 mb-6">
-                Budget:{" "}
-                <span className="font-semibold text-slate-800">
-                  ₹{trip.budget}
+                <span
+                  className={`inline-block px-3 py-1 text-xs rounded-full font-medium mb-4 ${statusStyles[status]}`}
+                >
+                  {status.toUpperCase()}
                 </span>
-              </p>
 
-              <Link to={`/trips/${trip.id}`}>
-                <button className="w-full py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold transition">
-                  View Trip Details
-                </button>
-              </Link>
-            </motion.div>
-          ))}
+                <h2 className="text-xl font-bold text-slate-800 mb-1">
+                  {trip.title}
+                </h2>
+
+                <p className="text-sm text-slate-500 mb-3">
+                  {formatDate(trip.start_date)} –{" "}
+                  {formatDate(trip.end_date)}
+                </p>
+
+                <p className="text-sm text-slate-600 mb-6">
+                  Destination:{" "}
+                  <span className="font-semibold text-slate-800">
+                    {trip.destination || "—"}
+                  </span>
+                </p>
+
+                <Link to={`/trips/${trip.id}`}>
+                  <button className="w-full py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold transition">
+                    View Trip Details
+                  </button>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
-      {/* ADD TRIP MODAL */}
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl"
-            >
-              <h3 className="text-xl font-bold text-slate-800 mb-4">
-                Add New Trip
-              </h3>
-
-              <input
-                placeholder="Trip name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: e.target.value })
-                }
-                className="w-full mb-3 px-4 py-2 rounded-xl border"
-              />
-
-              <input
-                type="date"
-                value={form.startDate}
-                onChange={(e) =>
-                  setForm({ ...form, startDate: e.target.value })
-                }
-                className="w-full mb-3 px-4 py-2 rounded-xl border"
-              />
-
-              <input
-                type="date"
-                value={form.endDate}
-                onChange={(e) =>
-                  setForm({ ...form, endDate: e.target.value })
-                }
-                className="w-full mb-3 px-4 py-2 rounded-xl border"
-              />
-
-              <input
-                type="number"
-                placeholder="Budget"
-                value={form.budget}
-                onChange={(e) =>
-                  setForm({ ...form, budget: e.target.value })
-                }
-                className="w-full mb-4 px-4 py-2 rounded-xl border"
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-slate-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddTrip}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold"
-                >
-                  Add Trip
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* NEW TRIP MODAL */}
+      {showNewTripModal && (
+        <NewTripModal
+          onClose={() => setShowNewTripModal(false)}
+          onCreate={handleCreateTrip}
+        />
+      )}
 
       <Footer />
     </div>
