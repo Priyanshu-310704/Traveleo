@@ -1,90 +1,109 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
-import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { motion, AnimatePresence } from "framer-motion";
+import Footer from "../components/Footer";
+import AddExpenseModal from "../components/AddExpenseModal";
 
-const tripData = {
-  id: 1,
-  name: "Goa Vacation",
-  startDate: "10 Jan 2025",
-  endDate: "18 Jan 2025",
-  budget: 60000,
-};
-
-const initialExpenses = [
-  { id: 1, title: "Hotel Stay", category: "Hotel", amount: 8000 },
-  { id: 2, title: "Lunch", category: "Food", amount: 1200 },
-  { id: 3, title: "Taxi", category: "Transport", amount: 900 },
-  { id: 4, title: "Shopping", category: "Shopping", amount: 4000 },
-];
-
-const categories = ["All", "Food", "Transport", "Hotel", "Shopping"];
+import { getTripById } from "../api/trip.api";
+import { getExpensesByTrip, getBudgetByTrip } from "../api/dashboard.api";
+import { formatDate } from "../utils/formatDate";
 
 const TripDetails = () => {
   const { id } = useParams();
 
-  const [expenses, setExpenses] = useState(initialExpenses);
+  const [trip, setTrip] = useState(null);
+  const [budget, setBudget] = useState(0);
+  const [expenses, setExpenses] = useState([]);
   const [filter, setFilter] = useState("All");
-  const [showModal, setShowModal] = useState(false);
 
-  const [form, setForm] = useState({
-    title: "",
-    category: "Food",
-    amount: "",
-  });
+  const [loading, setLoading] = useState(true);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
 
-  const filteredExpenses =
-    filter === "All" ? expenses : expenses.filter((e) => e.category === filter);
+  /* ================= LOAD DATA ================= */
+  const loadData = async () => {
+    try {
+      setLoading(true);
 
-  const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const remaining = tripData.budget - totalSpent;
+      const [tripRes, expenseRes, budgetRes] = await Promise.all([
+        getTripById(id),
+        getExpensesByTrip(id),
+        getBudgetByTrip(id),
+      ]);
 
-  const handleAddExpense = () => {
-    if (!form.title || !form.amount) return;
-
-    setExpenses([
-      ...expenses,
-      {
-        id: Date.now(),
-        title: form.title,
-        category: form.category,
-        amount: Number(form.amount),
-      },
-    ]);
-
-    setForm({ title: "", category: "Food", amount: "" });
-    setShowModal(false);
+      setTrip(tripRes.data.trip);
+      setExpenses(expenseRes.data?.expenses || []);
+      setBudget(Number(budgetRes.data?.budget?.total_budget || 0));
+    } catch (err) {
+      console.error("Trip details error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
+  /* ================= CALCULATIONS ================= */
+  const filteredExpenses =
+    filter === "All"
+      ? expenses
+      : expenses.filter((e) => e.category === filter);
+
+  const totalSpent = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const remaining = Math.max(budget - totalSpent, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-emerald-600">
+        Loading trip details...
+      </div>
+    );
+  }
+
+  if (!trip) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-500">
+        Trip not found
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
 
       <div className="flex-grow max-w-7xl mx-auto px-6 py-10">
         {/* HEADER */}
-        <h1 className="text-3xl font-bold text-slate-800 mb-1">
-          {tripData.name}
-        </h1>
-        <p className="text-sm text-slate-500 mb-8">
-          {tripData.startDate} – {tripData.endDate}
-        </p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-emerald-700">
+            {trip.title}
+            {trip.destination && (
+              <span className="text-slate-500 font-medium">
+                {" "}
+                • {trip.destination}
+              </span>
+            )}
+          </h1>
+
+          <p className="text-sm text-slate-500 mt-1">
+            {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
+          </p>
+        </div>
 
         {/* SUMMARY */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[
-            ["Trip Budget", `₹${tripData.budget}`, "text-slate-800"],
-            ["Total Spent", `₹${totalSpent}`, "text-red-500"],
-            ["Remaining", `₹${remaining}`, "text-emerald-600"],
-          ].map(([label, value, color]) => (
-            <div
-              key={label}
-              className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm"
-            >
-              <p className="text-sm text-slate-500">{label}</p>
-              <h2 className={`text-xl font-bold ${color}`}>{value}</h2>
-            </div>
-          ))}
+          <SummaryCard title="Trip Budget" value={`₹${budget}`} />
+          <SummaryCard
+            title="Total Spent"
+            value={`₹${totalSpent}`}
+            color="text-red-500"
+          />
+          <SummaryCard
+            title="Remaining"
+            value={`₹${remaining}`}
+            color="text-emerald-600"
+          />
         </div>
 
         {/* EXPENSE HEADER */}
@@ -92,21 +111,20 @@ const TripDetails = () => {
           <h2 className="text-xl font-semibold text-slate-800">Expenses</h2>
 
           <div className="flex gap-3">
-            {/* FILTER */}
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none"
+              className="px-4 py-2 rounded-xl border border-slate-300 text-sm"
             >
-              {categories.map((cat) => (
+              <option>All</option>
+              {[...new Set(expenses.map((e) => e.category))].map((cat) => (
                 <option key={cat}>{cat}</option>
               ))}
             </select>
 
-            {/* ADD BUTTON */}
             <button
-              onClick={() => setShowModal(true)}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
+              onClick={() => setShowAddExpenseModal(true)}
+              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
             >
               + Add Expense
             </button>
@@ -116,30 +134,20 @@ const TripDetails = () => {
         {/* EXPENSE TABLE */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm overflow-hidden">
           <table className="w-full text-left">
-            <thead className="bg-slate-100">
+            <thead className="bg-emerald-50">
               <tr>
-                <th className="px-6 py-3 text-sm font-semibold text-slate-600">
-                  Title
-                </th>
-                <th className="px-6 py-3 text-sm font-semibold text-slate-600">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-sm font-semibold text-slate-600">
-                  Amount (₹)
-                </th>
+                <th className="px-6 py-3 text-sm font-semibold">Title</th>
+                <th className="px-6 py-3 text-sm font-semibold">Category</th>
+                <th className="px-6 py-3 text-sm font-semibold">Amount</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredExpenses.map((expense) => (
-                <tr key={expense.id} className="border-t border-slate-200">
-                  <td className="px-6 py-4 text-slate-700">{expense.title}</td>
-                  <td className="px-6 py-4 text-slate-700">
-                    {expense.category}
-                  </td>
-                  <td className="px-6 py-4 text-slate-700">
-                    ₹{expense.amount}
-                  </td>
+              {filteredExpenses.map((e) => (
+                <tr key={e.id} className="border-t">
+                  <td className="px-6 py-4">{e.title}</td>
+                  <td className="px-6 py-4">{e.category}</td>
+                  <td className="px-6 py-4">₹{e.amount}</td>
                 </tr>
               ))}
 
@@ -147,9 +155,9 @@ const TripDetails = () => {
                 <tr>
                   <td
                     colSpan="3"
-                    className="px-6 py-6 text-center text-slate-500"
+                    className="px-6 py-8 text-center text-slate-400"
                   >
-                    No expenses found
+                    No expenses yet
                   </td>
                 </tr>
               )}
@@ -159,71 +167,25 @@ const TripDetails = () => {
       </div>
 
       {/* ADD EXPENSE MODAL */}
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white/90 backdrop-blur-lg rounded-2xl p-6 w-full max-w-sm shadow-xl"
-            >
-              <h3 className="text-xl font-bold text-slate-800 mb-4">
-                Add Expense
-              </h3>
-
-              <input
-                placeholder="Expense title"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full mb-3 px-4 py-2 rounded-xl border"
-              />
-
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full mb-3 px-4 py-2 rounded-xl border"
-              >
-                {categories.slice(1).map((cat) => (
-                  <option key={cat}>{cat}</option>
-                ))}
-              </select>
-
-              <input
-                type="number"
-                placeholder="Amount"
-                value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                className="w-full mb-4 px-4 py-2 rounded-xl border"
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-slate-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddExpense}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold"
-                >
-                  Add
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showAddExpenseModal && (
+        <AddExpenseModal
+          tripId={id}
+          onClose={() => setShowAddExpenseModal(false)}
+          onSuccess={loadData}
+        />
+      )}
 
       <Footer />
     </div>
   );
 };
+
+/* ================= SMALL COMPONENT ================= */
+const SummaryCard = ({ title, value, color = "text-slate-800" }) => (
+  <div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm">
+    <p className="text-sm text-slate-500">{title}</p>
+    <h2 className={`text-xl font-bold ${color}`}>{value}</h2>
+  </div>
+);
 
 export default TripDetails;

@@ -155,4 +155,41 @@ router.delete("/trips/:tripId", authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * Get single trip details (for TripDetails page)
+ */
+router.get("/trips/:tripId", authMiddleware, async (req, res) => {
+  const { tripId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT t.*, b.total_budget
+      FROM trips t
+      LEFT JOIN budgets b ON t.id = b.trip_id
+      WHERE t.id = $1 AND t.user_id = $2
+      `,
+      [tripId, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Trip not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      trip: result.rows[0]
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+
 export default router;

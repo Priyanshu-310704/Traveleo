@@ -39,7 +39,7 @@ function App() {
         />
 
         <Route
-          path="/trip/:id"
+          path="/trips/:id"
           element={
             <ProtectedRoute>
               <TripDetails />

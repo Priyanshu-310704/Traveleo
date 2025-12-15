@@ -47,16 +47,13 @@ const Dashboard = () => {
       const tripRes = await getTrips();
       const trips = tripRes.data?.trips || [];
 
-      // 🔥 FIND ONLY ACTIVE TRIP
       const today = new Date();
+      const active = trips.find(
+        (t) =>
+          today >= new Date(t.start_date) &&
+          today <= new Date(t.end_date)
+      );
 
-      const active = trips.find((trip) => {
-        return (
-          today >= new Date(trip.start_date) && today <= new Date(trip.end_date)
-        );
-      });
-
-      // ❌ NO ACTIVE TRIP → SHOW PLACEHOLDERS
       if (!active) {
         setActiveTrip(null);
         setBudget(0);
@@ -65,7 +62,6 @@ const Dashboard = () => {
         return;
       }
 
-      // ✅ ACTIVE TRIP FOUND
       setActiveTrip(active);
 
       /* ===== BUDGET ===== */
@@ -121,18 +117,22 @@ const Dashboard = () => {
     try {
       const res = await createTrip(tripData);
       setActiveTrip(res.data.trip);
-      setBudget(0);
-      setExpenseData([]);
-      setInsights([]);
       setShowNewTripModal(false);
+      await loadDashboard();
     } catch {
       alert("Failed to create trip");
     }
   };
 
+  /* ================= CALCULATIONS ================= */
   const totalSpent = expenseData.reduce((s, e) => s + e.value, 0);
-  const remaining = Math.max(budget - totalSpent, 0);
-  const usagePercent = budget > 0 ? Math.round((totalSpent / budget) * 100) : 0;
+
+  const rawUsagePercent =
+    budget > 0 ? Math.round((totalSpent / budget) * 100) : 0;
+
+  const visualUsagePercent = Math.min(rawUsagePercent, 100);
+  const isOverBudget = rawUsagePercent > 100;
+  const remaining = budget - totalSpent;
 
   if (loading) {
     return (
@@ -151,7 +151,9 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800">
             Welcome,{" "}
-            <span className="text-emerald-600">{user?.name || "Traveler"}</span>
+            <span className="text-emerald-600">
+              {user?.name || "Traveler"}
+            </span>
           </h1>
 
           <div className="flex gap-3 mt-4 sm:mt-0">
@@ -210,22 +212,36 @@ const Dashboard = () => {
           <SummaryCard
             title="Remaining"
             value={`₹${remaining}`}
-            color="text-emerald-600"
+            color={remaining < 0 ? "text-red-600" : "text-emerald-600"}
           />
         </div>
 
         {/* BUDGET BAR */}
         <div className="bg-white/70 p-6 rounded-2xl shadow-sm mb-10">
           <p className="font-semibold mb-2">Budget Usage</p>
-          <div className="w-full h-3 bg-slate-200 rounded-full">
+
+          <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
             <div
-              className={`h-full ${
-                usagePercent > 80 ? "bg-red-500" : "bg-emerald-500"
+              className={`h-full transition-all duration-500 ${
+                isOverBudget
+                  ? "bg-red-500"
+                  : rawUsagePercent > 80
+                  ? "bg-orange-500"
+                  : "bg-emerald-500"
               }`}
-              style={{ width: `${usagePercent}%` }}
+              style={{ width: `${visualUsagePercent}%` }}
             />
           </div>
-          <p className="text-sm mt-2">{usagePercent}% used</p>
+
+          <p className="text-sm mt-2 text-slate-600">
+            {isOverBudget ? (
+              <span className="text-red-600 font-semibold">
+                Over budget by ₹{Math.abs(remaining)} ({rawUsagePercent}%)
+              </span>
+            ) : (
+              `${rawUsagePercent}% of budget used`
+            )}
+          </p>
         </div>
 
         {/* CHARTS */}
@@ -304,7 +320,7 @@ const Dashboard = () => {
 };
 
 /* ================= SMALL COMPONENTS ================= */
-const SummaryCard = ({ title, value, color = "" }) => (
+const SummaryCard = ({ title, value, color = "text-slate-800" }) => (
   <div className="bg-white/70 p-6 rounded-2xl shadow-sm">
     <p className="text-sm text-slate-500">{title}</p>
     <h2 className={`text-2xl font-bold ${color}`}>{value}</h2>
