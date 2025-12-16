@@ -108,7 +108,7 @@ The app focuses heavily on **UX clarity**, **data integrity**, and **scalable ba
 - bcrypt (password hashing)
 
 ---
-
+```
 ## 🧱 Architecture
 
 Frontend (React)
@@ -140,7 +140,7 @@ Backend (Express)
 │ ├── authMiddleware
 │
 └── PostgreSQL Database
-
+```
 
 ---
 
