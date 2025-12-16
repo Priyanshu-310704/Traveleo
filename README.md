@@ -244,7 +244,7 @@ Offline support (PWA)
 
 👨‍💻 Author
 
-Ankush Jamuar
+Ankush Jamuar, Priyanshu Kumar
 Full-Stack Developer | MERN | UI/UX Focused
 
 Built with real-world logic, clean UX, and scalable architecture.
