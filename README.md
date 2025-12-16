@@ -1,234 +1,186 @@
-✈️ Travel Budget Tracker
+# ✈️ Travel Budget Tracker
+
+A full-stack **MERN-style (React + Node + PostgreSQL)** application that helps users **plan trips, set budgets, track expenses, and visualize spending** — all with a clean, modern UI and real-world budgeting logic.
+
+---
+
+## 🌟 Overview
+
+**Travel Budget Tracker** is a trip-centric expense management platform.
+
+Instead of tracking random expenses, users:
+- Create trips with a **fixed budget**
+- Add expenses under **categories**
+- See **only the active trip** on the dashboard
+- Instantly know when they are **over budget**
+
+The app focuses heavily on **UX clarity**, **data integrity**, and **scalable backend design**.
+
+---
+
+## 🚀 Features
+
+### 🔐 Authentication
+- JWT-based login & signup
+- Protected routes
+- User-specific data isolation
+
+---
+
+### 🧳 Trip Management
+- Create trips with:
+  - Title
+  - Destination
+  - Start & end dates
+  - Mandatory budget
+- Automatic trip status:
+  - **Upcoming**
+  - **Active**
+  - **Completed**
+- Delete trips (budgets & expenses removed safely)
+
+---
+
+### 📊 Smart Dashboard
+- Shows **only the active trip**
+- If no active trip → clean placeholder UI
+- Summary cards:
+  - Budget
+  - Spent
+  - Remaining / Over-budget
+- Budget usage bar:
+  - Never overflows UI
+  - Visually capped at 100%
+  - Turns red when over budget
+- Charts:
+  - Pie chart (expense distribution)
+  - Bar chart (category-wise spending)
+- Smart spending insights
+
+---
+
+### 💸 Expense Tracking
+- Add expenses per trip
+- Assign categories
+- Filter expenses by category
+- Real-time UI updates (no refresh)
+
+---
+
+### 🗂️ Categories
+- Default categories auto-created on signup:
+  - Food
+  - Transport
+  - Stay
+  - Shopping
+  - Entertainment
+  - Miscellaneous
+- Categories are **global per user**
+- Reusable across all trips
+
+---
+
+### 📄 Trip Details Page
+- Dedicated page per trip
+- Budget summary
+- Expense table
+- Category filtering
+- Add expense modal
+- UI consistent with dashboard theme
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- Recharts
+- Framer Motion
+- React Router DOM
+- Axios
 
-A full-stack MERN application to plan trips, track expenses, and stay within budget
+### Backend
+- Node.js
+- Express.js
+- PostgreSQL
+- JWT Authentication
+- bcrypt (password hashing)
 
-🌟 Overview
+---
 
-Travel Budget Tracker is a modern full-stack web application that helps users plan trips, set budgets, track expenses, and gain smart insights about their spending.
+## 🧱 Architecture
 
-Unlike basic expense trackers, this app is trip-centric:
-
-Each trip has its own budget
-
-Expenses are grouped by categories
-
-Only the active trip is shown on the dashboard
-
-The UI clearly highlights over-budget scenarios
-
-Built with clean UX, robust backend logic, and scalable architecture.
-
-🚀 Features
-🔐 Authentication
-
-Secure JWT-based login & signup
-
-Protected routes (Dashboard, Trips, Trip Details)
-
-User-specific data isolation
-
-🧳 Trips Management
-
-Create trips with:
-
-Title
-
-Destination
-
-Start & End dates
-
-Budget (mandatory)
-
-Automatic trip status:
-
-Upcoming
-
-Active
-
-Completed
-
-Delete trips (with cascading removal of budget & expenses)
-
-📊 Smart Dashboard
-
-Shows only the active trip
-
-If no active trip → clean placeholder UI
-
-Summary cards:
-
-Total Budget
-
-Total Spent
-
-Remaining / Over-budget
-
-Visual budget usage bar:
-
-Never overflows UI
-
-Turns red when over budget
-
-Percentage capped at 100% visually
-
-Expense analytics:
-
-Pie chart (category distribution)
-
-Bar chart (category-wise spending)
-
-Smart spending insights
-
-💸 Expense Tracking
-
-Add expenses per trip
-
-Assign categories
-
-Filter expenses by category
-
-Category-wise analytics
-
-Real-time dashboard updates (no refresh needed)
-
-🗂️ Categories
-
-Default categories created on signup
-
-Food
-
-Transport
-
-Stay
-
-Shopping
-
-Entertainment
-
-Miscellaneous
-
-Users can add custom categories
-
-Categories are global per user, reusable across trips
-
-📄 Trip Details Page
-
-Dedicated page for each trip
-
-Budget vs spent vs remaining summary
-
-Full expense table
-
-Add expense via modal
-
-Filter by category
-
-Clean, glassmorphic UI matching dashboard theme
-
-🛠️ Tech Stack
-Frontend
-
-React (Vite)
-
-Tailwind CSS
-
-Recharts (charts & analytics)
-
-Framer Motion (animations)
-
-React Router DOM
-
-Axios
-
-Backend
-
-Node.js
-
-Express.js
-
-PostgreSQL
-
-JWT Authentication
-
-bcrypt (password hashing)
-
-🧱 Architecture
 Frontend (React)
 │
 ├── Pages
-│   ├── Dashboard
-│   ├── Trips
-│   ├── TripDetails
-│   ├── Login / Signup
+│ ├── Dashboard
+│ ├── Trips
+│ ├── TripDetails
+│ ├── Login / Signup
 │
 ├── Components
-│   ├── Navbar
-│   ├── NewTripModal
-│   ├── AddExpenseModal
+│ ├── Navbar
+│ ├── NewTripModal
+│ ├── AddExpenseModal
 │
 ├── API Layer (Axios)
 │
 Backend (Express)
 │
 ├── Routes
-│   ├── auth
-│   ├── trips
-│   ├── budgets
-│   ├── expenses
-│   ├── categories
+│ ├── auth
+│ ├── trips
+│ ├── budgets
+│ ├── expenses
+│ ├── categories
 │
 ├── Middleware
-│   ├── authMiddleware
+│ ├── authMiddleware
 │
 └── PostgreSQL Database
 
-🗃️ Database Design
-Core Tables
 
-users
+---
 
-trips
+## 🗃️ Database Design
 
-budgets
+### Tables
+- `users`
+- `trips`
+- `budgets`
+- `expenses`
+- `categories`
 
-expenses
+### Design Decisions
+- Budget stored in a **separate table**
+- Categories linked to **users**, not trips
+- Expenses linked to **trip + category**
+- Trip + budget created inside a **transaction**
 
-categories
+---
 
-Key Design Decisions
+## 🔐 Security
+- Password hashing with bcrypt
+- JWT-based authentication
+- Protected API routes
+- User-scoped queries
 
-Budget stored in a separate table
+---
 
-Categories linked to users, not trips
+## 🎨 UX Highlights
+- Glassmorphism UI
+- Smooth animations
+- Clear empty states
+- Over-budget visual warnings
+- Mobile-responsive design
 
-Expenses linked to trip + category
+---
 
-Transaction-based trip + budget creation
+## ⚙️ Setup Instructions
 
-🔐 Security
-
-Password hashing using bcrypt
-
-JWT authentication middleware
-
-User-scoped queries (no data leakage)
-
-Protected frontend routes
-
-🎨 UX Highlights
-
-Glassmorphism UI
-
-Smooth transitions with Framer Motion
-
-Clear over-budget warnings
-
-Clean empty states
-
-Mobile-responsive layout
-
-⚙️ Setup Instructions
-1️⃣ Clone the repository
+### 1️⃣ Clone the Repository
+```bash
 git clone https://github.com/yourusername/travel-budget-tracker.git
 cd travel-budget-tracker
 
@@ -243,9 +195,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/travel_budget
 JWT_SECRET=your_secret_key
 JWT_EXPIRES_IN=7d
 
-
 Run backend:
-
 npm run dev
 
 3️⃣ Frontend Setup
@@ -253,54 +203,47 @@ cd frontend
 npm install
 npm run dev
 
-🧪 Sample Data (Optional)
+🧪 Sample Data
 
-A seed script is available to populate:
+Optional seed script available to populate:
 
-Sample users
-
+Users
 Trips
-
 Budgets
-
 Categories
-
 Expenses
-
-Perfect for demos & testing.
 
 🧠 Learning Outcomes
 
 This project demonstrates:
 
-Full-stack MERN development
+Full-stack application design
 
-RESTful API design
+REST API development
 
-Auth flows & protected routes
+Authentication & authorization
 
-Complex state management
-
-UX-driven UI decisions
+State management & UX-driven UI
 
 Real-world budgeting logic
 
+Database transactions
+
 🚧 Future Enhancements
 
-Export expenses as CSV/PDF
+Export expenses (CSV / PDF)
 
 Budget alerts & notifications
 
 Multi-currency support
 
-Trip sharing with collaborators
+Trip collaboration
 
 Offline support (PWA)
 
 👨‍💻 Author
 
 Ankush Jamuar
-📍 India
-💻 Full-Stack Developer | MERN | UI/UX Enthusiast
+Full-Stack Developer | MERN | UI/UX Focused
 
-Built with attention to detail, real-world logic, and user-first design.
+Built with real-world logic, clean UX, and scalable architecture.
