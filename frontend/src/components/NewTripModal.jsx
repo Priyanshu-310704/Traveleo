@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiX, FiMapPin, FiCalendar, FiDollarSign } from "react-icons/fi";
+import {
+  FiX,
+  FiMapPin,
+  FiCalendar,
+  FiDollarSign,
+} from "react-icons/fi";
 
 const NewTripModal = ({ onClose, onCreate }) => {
   const [title, setTitle] = useState("");
@@ -25,7 +30,7 @@ const NewTripModal = ({ onClose, onCreate }) => {
       destination,
       start_date: startDate,
       end_date: endDate,
-      total_budget: Number(budget), // 🔥 IMPORTANT
+      total_budget: Number(budget),
     });
   };
 
@@ -34,119 +39,88 @@ const NewTripModal = ({ onClose, onCreate }) => {
       onClick={onClose}
       className="
         fixed inset-0 z-50 flex items-center justify-center px-4
-        bg-gradient-to-br from-emerald-900/50 via-teal-900/50 to-green-900/50
-        backdrop-blur-md
+        bg-black/50 backdrop-blur-md
       "
     >
-      {/* 🧊 GREEN GLASS MODAL */}
+      {/* MODAL */}
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
         className="
-          w-full max-w-md
+          w-full max-w-lg
           rounded-3xl
-          bg-emerald-100/20
-          backdrop-blur-xl
-          border border-emerald-200/30
-          shadow-2xl
-          p-6 sm:p-8
+          bg-white/5 backdrop-blur-2xl
+          border border-white/15
+          shadow-[0_40px_120px_rgba(0,0,0,0.6)]
+          text-white
+          p-8
         "
       >
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Create New Trip</h2>
+          <div>
+            <h2 className="text-xl font-semibold">Create New Trip</h2>
+            <p className="text-sm text-white/60 mt-1">
+              Plan your journey and set a budget
+            </p>
+          </div>
+
           <button
             onClick={onClose}
-            className="text-white/70 hover:text-white transition"
+            className="
+              p-2 rounded-lg
+              text-white/60 hover:text-white
+              hover:bg-white/10
+              transition
+            "
           >
-            <FiX size={22} />
+            <FiX size={20} />
           </button>
         </div>
 
         {/* FORM */}
         <div className="space-y-4">
           {/* TITLE */}
-          <input
-            type="text"
+          <Input
             placeholder="Trip title *"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="
-              w-full px-4 py-3 rounded-xl
-              bg-white/85 text-slate-800 placeholder-slate-500
-              outline-none
-              focus:ring-2 focus:ring-emerald-500
-            "
           />
 
           {/* DESTINATION */}
-          <div className="relative">
-            <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
-            <input
-              type="text"
-              placeholder="Destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="
-                w-full pl-11 pr-4 py-3 rounded-xl
-                bg-white/85 text-slate-800 placeholder-slate-500
-                outline-none
-                focus:ring-2 focus:ring-emerald-500
-              "
-            />
-          </div>
+          <Input
+            icon={<FiMapPin />}
+            placeholder="Destination (optional)"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+          />
 
           {/* DATES */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
-              <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="
-                  w-full pl-11 pr-4 py-3 rounded-xl
-                  bg-white/85 text-slate-800
-                  outline-none
-                  focus:ring-2 focus:ring-emerald-500
-                "
-              />
-            </div>
-
-            <div className="relative">
-              <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="
-                  w-full pl-11 pr-4 py-3 rounded-xl
-                  bg-white/85 text-slate-800
-                  outline-none
-                  focus:ring-2 focus:ring-emerald-500
-                "
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              icon={<FiCalendar />}
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <Input
+              icon={<FiCalendar />}
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
           </div>
 
           {/* BUDGET */}
-          <div className="relative">
-            <FiDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-700" />
-            <input
-              type="number"
-              placeholder="Trip Budget (₹) *"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              className="
-                w-full pl-11 pr-4 py-3 rounded-xl
-                bg-white/85 text-slate-800 placeholder-slate-500
-                outline-none
-                focus:ring-2 focus:ring-emerald-500
-              "
-            />
-          </div>
+          <Input
+            icon={<FiDollarSign />}
+            type="number"
+            placeholder="Total budget (₹) *"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+          />
         </div>
 
         {/* ACTIONS */}
@@ -155,7 +129,8 @@ const NewTripModal = ({ onClose, onCreate }) => {
             onClick={onClose}
             className="
               px-4 py-2 rounded-xl
-              text-white/80 hover:text-white
+              text-white/70
+              hover:text-white
               hover:bg-white/10
               transition
             "
@@ -167,8 +142,10 @@ const NewTripModal = ({ onClose, onCreate }) => {
             onClick={handleSubmit}
             className="
               px-6 py-2 rounded-xl
-              bg-emerald-600 hover:bg-emerald-700
-              text-white font-semibold
+              bg-gradient-to-r from-emerald-500 to-teal-500
+              font-semibold
+              shadow-lg shadow-emerald-500/30
+              hover:brightness-110
               transition
             "
           >
@@ -179,5 +156,27 @@ const NewTripModal = ({ onClose, onCreate }) => {
     </div>
   );
 };
+
+/* ================= INPUT ================= */
+const Input = ({ icon, ...props }) => (
+  <div className="relative">
+    {icon && (
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
+        {icon}
+      </span>
+    )}
+    <input
+      {...props}
+      className={`
+        w-full py-3 rounded-xl
+        ${icon ? "pl-11" : "pl-4"} pr-4
+        bg-white/10 border border-white/20
+        text-white placeholder-white/40
+        outline-none
+        focus:ring-2 focus:ring-emerald-400
+      `}
+    />
+  </div>
+);
 
 export default NewTripModal;

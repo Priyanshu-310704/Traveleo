@@ -7,89 +7,95 @@ import FooterLanding from "../components/FooterLanding";
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-600 via-teal-600 to-green-500 flex flex-col px-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#0F172A] via-[#0B3C3A] to-[#064E3B] text-white">
 
-      {/* MAIN CONTENT */}
-      <div className="flex-grow flex flex-col items-center justify-center">
+      {/* HERO SECTION */}
+      <section className="flex-grow flex items-center px-6 lg:px-20 py-20">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-        {/* BRAND */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-10"
-        >
-          <Brand light size="lg" />
-        </motion.div>
-
-        {/* MAIN GLASS CARD */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-3xl backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 sm:p-12 text-center"
-        >
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
-            Plan Smarter. Travel Better.
-          </h1>
-
-          <p className="text-green-100 mt-4 text-lg max-w-2xl mx-auto">
-            TraveLeo helps you plan trips, track expenses, and stay within your
-            budget — effortlessly.
-          </p>
-
-          <p className="text-green-200 mt-2 text-sm">
-            Designed for stress-free travel planning.
-          </p>
-
-          {/* FEATURES */}
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-8 text-white">
-            <div className="flex flex-col items-center bg-white/10 rounded-2xl p-5">
-              <FiDollarSign className="text-3xl mb-3 text-green-200" />
-              <h3 className="font-semibold">Track Expenses</h3>
-              <p className="text-sm text-green-100 text-center mt-1">
-                Record every travel expense easily
-              </p>
+          {/* LEFT CONTENT */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* LOGO */}
+            <div className="mb-8">
+              <Brand light size="lg" />
             </div>
 
-            <div className="flex flex-col items-center bg-white/10 rounded-2xl p-5">
-              <FiPieChart className="text-3xl mb-3 text-green-200" />
-              <h3 className="font-semibold">Categorize Spending</h3>
-              <p className="text-sm text-green-100 text-center mt-1">
-                Food, travel, stay & more
-              </p>
+            <h1 className="text-4xl md:text-5xl xl:text-6xl font-extrabold leading-tight">
+              Smarter travel
+              <br />
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                budgeting & expenses
+              </span>
+            </h1>
+
+            <p className="mt-6 text-lg text-white/70 max-w-xl">
+              TraveLeo helps you plan trips, track every expense, and stay within
+              budget — all in one clean, intuitive dashboard designed for
+              stress-free travel.
+            </p>
+
+            {/* CTA */}
+            <div className="mt-10 flex flex-col sm:flex-row gap-4">
+              <Link to="/signup">
+                <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 font-semibold shadow-lg shadow-emerald-500/30 hover:brightness-110 transition">
+                  Get Started Free
+                </button>
+              </Link>
+
+              <Link to="/login">
+                <button className="px-8 py-4 rounded-xl border border-white/30 text-white/90 hover:bg-white/10 transition">
+                  Login
+                </button>
+              </Link>
             </div>
+          </motion.div>
 
-            <div className="flex flex-col items-center bg-white/10 rounded-2xl p-5">
-              <FiTrendingUp className="text-3xl mb-3 text-green-200" />
-              <h3 className="font-semibold">Budget Insights</h3>
-              <p className="text-sm text-green-100 text-center mt-1">
-                Get smart budget alerts
-              </p>
+          {/* RIGHT GLASS PANEL */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="relative bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-10 shadow-2xl"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <Feature
+                icon={<FiDollarSign />}
+                title="Expense Tracking"
+                desc="Log every travel expense in seconds"
+              />
+              <Feature
+                icon={<FiPieChart />}
+                title="Smart Categories"
+                desc="Clear insights into where your money goes"
+              />
+              <Feature
+                icon={<FiTrendingUp />}
+                title="Budget Insights"
+                desc="Stay in control with real-time budget views"
+              />
             </div>
-          </div>
+          </motion.div>
+        </div>
+      </section>
 
-          {/* CTA */}
-          <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center">
-            <Link to="/signup">
-              <button className="px-10 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition text-lg w-full sm:w-auto">
-                Get Started
-              </button>
-            </Link>
-
-            <Link to="/login">
-              <button className="px-8 py-4 rounded-xl border border-white/50 text-white font-semibold hover:bg-white/10 transition w-full sm:w-auto">
-                Login
-              </button>
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* FOOTER AT BOTTOM */}
+      {/* FOOTER */}
       <FooterLanding />
     </div>
   );
 };
+
+const Feature = ({ icon, title, desc }) => (
+  <div className="rounded-2xl bg-white/10 border border-white/20 p-6 text-center hover:bg-white/15 transition">
+    <div className="text-3xl text-emerald-400 mb-3">
+      {icon}
+    </div>
+    <h3 className="font-semibold">{title}</h3>
+    <p className="text-sm text-white/60 mt-1">{desc}</p>
+  </div>
+);
 
 export default Landing;

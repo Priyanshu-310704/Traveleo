@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import AddExpenseModal from "../components/AddExpenseModal";
 
@@ -19,7 +19,7 @@ const TripDetails = () => {
   const [loading, setLoading] = useState(true);
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
 
-  /* ================= LOAD DATA ================= */
+  /* LOAD DATA */
   const loadData = async () => {
     try {
       setLoading(true);
@@ -44,18 +44,17 @@ const TripDetails = () => {
     loadData();
   }, [id]);
 
-  /* ================= CALCULATIONS ================= */
+  /* CALCULATIONS */
   const filteredExpenses =
-    filter === "All"
-      ? expenses
-      : expenses.filter((e) => e.category === filter);
+    filter === "All" ? expenses : expenses.filter((e) => e.category === filter);
 
   const totalSpent = expenses.reduce((s, e) => s + Number(e.amount), 0);
-  const remaining = Math.max(budget - totalSpent, 0);
+
+  const remaining = budget - totalSpent;
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-emerald-600">
+      <div className="min-h-screen flex items-center justify-center text-emerald-400 bg-[#0F172A]">
         Loading trip details...
       </div>
     );
@@ -63,107 +62,137 @@ const TripDetails = () => {
 
   if (!trip) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-500">
+      <div className="min-h-screen flex items-center justify-center text-white/60 bg-[#0F172A]">
         Trip not found
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex bg-gradient-to-br from-[#0F172A] via-[#0B3C3A] to-[#064E3B] text-white">
+      {/* SIDEBAR */}
+      <Sidebar />
 
-      <div className="flex-grow max-w-7xl mx-auto px-6 py-10">
-        {/* HEADER */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-emerald-700">
-            {trip.title}
-            {trip.destination && (
-              <span className="text-slate-500 font-medium">
-                {" "}
-                • {trip.destination}
-              </span>
-            )}
-          </h1>
-
-          <p className="text-sm text-slate-500 mt-1">
-            {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
-          </p>
-        </div>
-
-        {/* SUMMARY */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <SummaryCard title="Trip Budget" value={`₹${budget}`} />
-          <SummaryCard
-            title="Total Spent"
-            value={`₹${totalSpent}`}
-            color="text-red-500"
-          />
-          <SummaryCard
-            title="Remaining"
-            value={`₹${remaining}`}
-            color="text-emerald-600"
-          />
-        </div>
-
-        {/* EXPENSE HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800">Expenses</h2>
-
-          <div className="flex gap-3">
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 rounded-xl border border-slate-300 text-sm"
-            >
-              <option>All</option>
-              {[...new Set(expenses.map((e) => e.category))].map((cat) => (
-                <option key={cat}>{cat}</option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => setShowAddExpenseModal(true)}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-            >
-              + Add Expense
-            </button>
-          </div>
-        </div>
-
-        {/* EXPENSE TABLE */}
-        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-emerald-50">
-              <tr>
-                <th className="px-6 py-3 text-sm font-semibold">Title</th>
-                <th className="px-6 py-3 text-sm font-semibold">Category</th>
-                <th className="px-6 py-3 text-sm font-semibold">Amount</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredExpenses.map((e) => (
-                <tr key={e.id} className="border-t">
-                  <td className="px-6 py-4">{e.title}</td>
-                  <td className="px-6 py-4">{e.category}</td>
-                  <td className="px-6 py-4">₹{e.amount}</td>
-                </tr>
-              ))}
-
-              {filteredExpenses.length === 0 && (
-                <tr>
-                  <td
-                    colSpan="3"
-                    className="px-6 py-8 text-center text-slate-400"
-                  >
-                    No expenses yet
-                  </td>
-                </tr>
+      {/* PAGE CONTENT */}
+      <div className="flex flex-col flex-grow pl-64">
+        {/* MAIN */}
+        <main className="flex-grow px-8 py-12 max-w-7xl mx-auto w-full">
+          {/* HEADER */}
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold">
+              {trip.title}
+              {trip.destination && (
+                <span className="text-white/60 font-medium">
+                  {" "}
+                  • {trip.destination}
+                </span>
               )}
-            </tbody>
-          </table>
-        </div>
+            </h1>
+
+            <p className="text-sm text-white/60 mt-2">
+              {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
+            </p>
+          </div>
+
+          {/* SUMMARY */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <StatCard title="Trip Budget" value={`₹${budget}`} />
+            <StatCard
+              title="Total Spent"
+              value={`₹${totalSpent}`}
+              color="text-red-400"
+            />
+            <StatCard
+              title="Remaining"
+              value={`₹${remaining}`}
+              color={remaining < 0 ? "text-red-500" : "text-emerald-400"}
+            />
+          </div>
+
+          {/* EXPENSE HEADER */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-4">
+            <h2 className="text-xl font-semibold">Expenses</h2>
+
+            <div className="flex gap-3">
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="
+    px-4 py-2 rounded-xl
+    bg-white/10 backdrop-blur-xl
+    border border-white/20
+    text-white text-sm
+    outline-none cursor-pointer
+    focus:ring-2 focus:ring-emerald-400
+  "
+              >
+                <option className="bg-[#0F172A] text-white">All</option>
+
+                {[...new Set(expenses.map((e) => e.category))].map((cat) => (
+                  <option
+                    key={cat}
+                    value={cat}
+                    className="bg-[#0F172A] text-white"
+                  >
+                    {cat}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={() => setShowAddExpenseModal(true)}
+                className="
+                  px-5 py-2 rounded-xl
+                  bg-gradient-to-r from-emerald-500 to-teal-500
+                  font-semibold shadow-lg shadow-emerald-500/30
+                  hover:brightness-110 transition
+                "
+              >
+                + Add Expense
+              </button>
+            </div>
+          </div>
+
+          {/* EXPENSE TABLE */}
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-white/10">
+                <tr>
+                  <th className="px-6 py-4 text-sm font-semibold">Title</th>
+                  <th className="px-6 py-4 text-sm font-semibold">Category</th>
+                  <th className="px-6 py-4 text-sm font-semibold">Amount</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredExpenses.map((e) => (
+                  <tr
+                    key={e.id}
+                    className="border-t border-white/10 hover:bg-white/5 transition"
+                  >
+                    <td className="px-6 py-4">{e.title || "—"}</td>
+                    <td className="px-6 py-4 text-white/70">{e.category}</td>
+                    <td className="px-6 py-4 font-semibold">₹{e.amount}</td>
+                  </tr>
+                ))}
+
+                {filteredExpenses.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="3"
+                      className="px-6 py-10 text-center text-white/50"
+                    >
+                      No expenses found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </main>
+
+        {/* FOOTER — NOW ALWAYS AT BOTTOM */}
+        <Footer />
       </div>
 
       {/* ADD EXPENSE MODAL */}
@@ -174,17 +203,15 @@ const TripDetails = () => {
           onSuccess={loadData}
         />
       )}
-
-      <Footer />
     </div>
   );
 };
 
-/* ================= SMALL COMPONENT ================= */
-const SummaryCard = ({ title, value, color = "text-slate-800" }) => (
-  <div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm">
-    <p className="text-sm text-slate-500">{title}</p>
-    <h2 className={`text-xl font-bold ${color}`}>{value}</h2>
+/* SMALL UI */
+const StatCard = ({ title, value, color = "text-white" }) => (
+  <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
+    <p className="text-sm text-white/50">{title}</p>
+    <h2 className={`text-2xl font-bold mt-1 ${color}`}>{value}</h2>
   </div>
 );
 
