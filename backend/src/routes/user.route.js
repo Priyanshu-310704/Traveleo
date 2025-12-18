@@ -34,12 +34,12 @@ router.post("/users", async (req, res) => {
       "Transport",
       "Shopping",
       "Entertainment",
-      "Miscellaneous"
+      "Miscellaneous",
     ];
 
-    const values = DEFAULT_CATEGORIES
-      .map((_, i) => `($1, $${i + 2})`)
-      .join(",");
+    const values = DEFAULT_CATEGORIES.map((_, i) => `($1, $${i + 2})`).join(
+      ","
+    );
 
     await pool.query(
       `
@@ -50,26 +50,26 @@ router.post("/users", async (req, res) => {
     );
 
     // 🎉 Welcome Mail
-    sendWelcomeMail(user.email, user.name)
-      .catch(err => console.log("Mail error:", err.message));
+    sendWelcomeMail(user.email, user.name).catch((err) =>
+      console.log("Mail error:", err.message)
+    );
 
     res.status(201).json({
       success: true,
       message: "Signup successful. Please login.",
-      user
+      user,
     });
-
   } catch (error) {
     if (error.code === "23505") {
       return res.status(400).json({
         success: false,
-        message: "Email already exists"
+        message: "Email already exists",
       });
     }
 
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -89,7 +89,7 @@ router.post("/login", async (req, res) => {
     if (userResult.rows.length === 0) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
 
@@ -100,15 +100,12 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
 
     // 🔥 DELETE OLD OTPs
-    await pool.query(
-      `DELETE FROM user_otps WHERE user_id = $1`,
-      [user.id]
-    );
+    await pool.query(`DELETE FROM user_otps WHERE user_id = $1`, [user.id]);
 
     // 🔐 Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -128,14 +125,14 @@ router.post("/login", async (req, res) => {
 
     res.status(200).json({
       success: true,
+      otpRequired: true, // 🔥 ADD THIS
+      userId: user.id,
       message: "OTP sent to your email",
-      userId: user.id
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -158,29 +155,23 @@ router.post("/verify-otp", async (req, res) => {
     if (otpResult.rows.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP"
+        message: "Invalid OTP",
       });
     }
 
     const otpRow = otpResult.rows[0];
 
     if (new Date() > otpRow.expires_at) {
-      await pool.query(
-        `DELETE FROM user_otps WHERE user_id = $1`,
-        [userId]
-      );
+      await pool.query(`DELETE FROM user_otps WHERE user_id = $1`, [userId]);
 
       return res.status(400).json({
         success: false,
-        message: "OTP expired"
+        message: "OTP expired",
       });
     }
 
     // 🧹 Delete OTP after success
-    await pool.query(
-      `DELETE FROM user_otps WHERE user_id = $1`,
-      [userId]
-    );
+    await pool.query(`DELETE FROM user_otps WHERE user_id = $1`, [userId]);
 
     const userResult = await pool.query(
       `SELECT id, name, email FROM users WHERE id = $1`,
@@ -199,13 +190,12 @@ router.post("/verify-otp", async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      user
+      user,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -225,16 +215,13 @@ router.post("/resend-otp", async (req, res) => {
     if (userResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
     const user = userResult.rows[0];
 
-    await pool.query(
-      `DELETE FROM user_otps WHERE user_id = $1`,
-      [userId]
-    );
+    await pool.query(`DELETE FROM user_otps WHERE user_id = $1`, [userId]);
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
@@ -251,13 +238,12 @@ router.post("/resend-otp", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "OTP resent successfully"
+      message: "OTP resent successfully",
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
