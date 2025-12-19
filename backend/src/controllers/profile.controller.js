@@ -98,15 +98,25 @@ export const changePassword = async (req, res) => {
       currentPassword,
       userRes.rows[0].password
     );
-
+    
     if (!isValid) {
       return res.status(401).json({
         success: false,
         message: "Current password is incorrect",
       });
     }
-
+    
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const isSame = await bcrypt.compare(
+      currentPassword,
+      hashedPassword
+    );
+    if (isSame) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password must not be same",
+      });
+    }
 
     await pool.query(
       "UPDATE users SET password = $1 WHERE id = $2",
