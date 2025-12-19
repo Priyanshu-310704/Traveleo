@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import AddExpenseModal from "../components/AddExpenseModal";
+import CategoryChart from "../components/TripDetails/CategoryChart";
 
 import { getTripById } from "../api/trip.api";
 import { getExpensesByTrip, getBudgetByTrip } from "../api/dashboard.api";
@@ -44,12 +45,14 @@ const TripDetails = () => {
     loadData();
   }, [id]);
 
-  /* CALCULATIONS */
+  /* FILTERED EXPENSES */
   const filteredExpenses =
-    filter === "All" ? expenses : expenses.filter((e) => e.category === filter);
+    filter === "All"
+      ? expenses
+      : expenses.filter((e) => e.category === filter);
 
+  /* CALCULATIONS */
   const totalSpent = expenses.reduce((s, e) => s + Number(e.amount), 0);
-
   const remaining = budget - totalSpent;
 
   if (loading) {
@@ -75,7 +78,6 @@ const TripDetails = () => {
 
       {/* PAGE CONTENT */}
       <div className="flex flex-col flex-grow pl-64">
-        {/* MAIN */}
         <main className="flex-grow px-8 py-12 max-w-7xl mx-auto w-full">
           {/* HEADER */}
           <div className="mb-10">
@@ -109,6 +111,11 @@ const TripDetails = () => {
             />
           </div>
 
+          {/* CATEGORY CHART */}
+          <div className="mb-12">
+            <CategoryChart expenses={expenses} />
+          </div>
+
           {/* EXPENSE HEADER */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-4">
             <h2 className="text-xl font-semibold">Expenses</h2>
@@ -118,13 +125,13 @@ const TripDetails = () => {
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 className="
-    px-4 py-2 rounded-xl
-    bg-white/10 backdrop-blur-xl
-    border border-white/20
-    text-white text-sm
-    outline-none cursor-pointer
-    focus:ring-2 focus:ring-emerald-400
-  "
+                  px-4 py-2 rounded-xl
+                  bg-white/10 backdrop-blur-xl
+                  border border-white/20
+                  text-white text-sm
+                  outline-none cursor-pointer
+                  focus:ring-2 focus:ring-emerald-400
+                "
               >
                 <option className="bg-[#0F172A] text-white">All</option>
 
@@ -158,21 +165,25 @@ const TripDetails = () => {
             <table className="w-full text-left">
               <thead className="bg-white/10">
                 <tr>
-                  <th className="px-6 py-4 text-sm font-semibold">Title</th>
+                  <th className="px-6 py-4 text-sm font-semibold">#</th>
                   <th className="px-6 py-4 text-sm font-semibold">Category</th>
                   <th className="px-6 py-4 text-sm font-semibold">Amount</th>
                 </tr>
               </thead>
 
               <tbody>
-                {filteredExpenses.map((e) => (
+                {filteredExpenses.map((e, index) => (
                   <tr
                     key={e.id}
                     className="border-t border-white/10 hover:bg-white/5 transition"
                   >
-                    <td className="px-6 py-4">{e.title || "—"}</td>
-                    <td className="px-6 py-4 text-white/70">{e.category}</td>
-                    <td className="px-6 py-4 font-semibold">₹{e.amount}</td>
+                    <td className="px-6 py-4 text-white/60">
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-4">{e.category}</td>
+                    <td className="px-6 py-4 font-semibold">
+                      ₹{e.amount}
+                    </td>
                   </tr>
                 ))}
 
@@ -191,7 +202,6 @@ const TripDetails = () => {
           </div>
         </main>
 
-        {/* FOOTER — NOW ALWAYS AT BOTTOM */}
         <Footer />
       </div>
 
@@ -207,7 +217,7 @@ const TripDetails = () => {
   );
 };
 
-/* SMALL UI */
+/* STAT CARD */
 const StatCard = ({ title, value, color = "text-white" }) => (
   <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
     <p className="text-sm text-white/50">{title}</p>
