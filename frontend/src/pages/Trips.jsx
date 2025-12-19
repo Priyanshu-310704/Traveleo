@@ -12,9 +12,12 @@ import { formatDate } from "../utils/formatDate";
 
 /* STATUS STYLES */
 const statusStyles = {
-  active: "bg-emerald-400/15 text-emerald-300 border border-emerald-400/30",
-  upcoming: "bg-cyan-400/15 text-cyan-300 border border-cyan-400/30",
-  completed: "bg-slate-400/15 text-slate-300 border border-slate-400/30",
+  active:
+    "bg-emerald-400/15 text-emerald-300 border border-emerald-400/30",
+  upcoming:
+    "bg-cyan-400/15 text-cyan-300 border border-cyan-400/30",
+  completed:
+    "bg-slate-400/15 text-slate-300 border border-slate-400/30",
 };
 
 const statusPriority = { active: 0, upcoming: 1, completed: 2 };
@@ -55,13 +58,9 @@ const Trips = () => {
   };
 
   const handleDeleteTrip = async (tripId) => {
-    try {
-      await deleteTrip(tripId);
-      setDeleteTripTarget(null);
-      loadTrips();
-    } catch {
-      alert("Failed to delete trip");
-    }
+    await deleteTrip(tripId);
+    setDeleteTripTarget(null);
+    loadTrips();
   };
 
   const sortedTrips = [...trips].sort((a, b) => {
@@ -76,7 +75,8 @@ const Trips = () => {
 
       <div className="flex flex-col flex-grow pl-64">
         <main className="flex-grow px-8 py-12 max-w-7xl mx-auto w-full">
-          <div className="flex justify-between mb-12">
+          {/* HEADER */}
+          <div className="flex flex-col sm:flex-row sm:justify-between mb-12">
             <h1 className="text-3xl font-bold">
               Your{" "}
               <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
@@ -86,54 +86,102 @@ const Trips = () => {
 
             <button
               onClick={() => setShowNewTripModal(true)}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 font-semibold shadow-lg"
+              className="mt-4 sm:mt-0 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 font-semibold shadow-lg shadow-emerald-500/30 hover:brightness-110 transition"
             >
               + New Trip
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sortedTrips.map((trip) => {
-              const status = getTripStatus(trip.start_date, trip.end_date);
+          {/* LOADING */}
+          {loading && (
+            <p className="text-center text-white/60">
+              Loading your trips...
+            </p>
+          )}
 
-              return (
-                <motion.div
-                  key={trip.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="relative p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10"
-                >
-                  <button
-                    onClick={() => setDeleteTripTarget(trip)}
-                    className="absolute top-4 right-4 text-red-400 hover:text-red-300"
+          {/* EMPTY STATE */}
+          {!loading && sortedTrips.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center mt-32 text-center"
+            >
+              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center mb-6 shadow-inner">
+                <span className="text-5xl">✈️</span>
+              </div>
+
+              <h2 className="text-2xl font-semibold mb-2">
+                No trips yet
+              </h2>
+
+              <p className="text-white/60 max-w-md mb-6">
+                Start planning your journeys and track expenses beautifully
+                with TraveLeo.
+              </p>
+
+              <button
+                onClick={() => setShowNewTripModal(true)}
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 font-semibold shadow-lg shadow-emerald-500/30 hover:brightness-110 transition"
+              >
+                + Create Your First Trip
+              </button>
+            </motion.div>
+          )}
+
+          {/* TRIP GRID */}
+          {sortedTrips.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {sortedTrips.map((trip) => {
+                const status = getTripStatus(
+                  trip.start_date,
+                  trip.end_date
+                );
+
+                return (
+                  <motion.div
+                    key={trip.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10"
                   >
-                    <FiTrash2 />
-                  </button>
-
-                  <span className={`px-3 py-1 text-xs rounded-full ${statusStyles[status]}`}>
-                    {status.toUpperCase()}
-                  </span>
-
-                  <h2 className="text-xl font-semibold mt-4">{trip.title}</h2>
-
-                  <p className="text-sm text-white/60 mb-4">
-                    {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
-                  </p>
-
-                  <Link to={`/trips/${trip.id}`}>
-                    <button className="w-full py-3 rounded-xl bg-white/10 text-emerald-300">
-                      View Trip Details
+                    <button
+                      onClick={() => setDeleteTripTarget(trip)}
+                      className="absolute top-4 right-4 text-red-400 hover:text-red-300 transition"
+                    >
+                      <FiTrash2 />
                     </button>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
+
+                    <span
+                      className={`inline-block mb-4 px-3 py-1 text-xs rounded-full ${statusStyles[status]}`}
+                    >
+                      {status.toUpperCase()}
+                    </span>
+
+                    <h2 className="text-xl font-semibold">
+                      {trip.title}
+                    </h2>
+
+                    <p className="text-sm text-white/60 mb-4">
+                      {formatDate(trip.start_date)} –{" "}
+                      {formatDate(trip.end_date)}
+                    </p>
+
+                    <Link to={`/trips/${trip.id}`}>
+                      <button className="w-full py-3 rounded-xl bg-white/10 text-emerald-300 hover:bg-white/15 transition">
+                        View Trip Details
+                      </button>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </main>
 
         <Footer />
       </div>
 
+      {/* MODALS */}
       {showNewTripModal && (
         <NewTripModal
           onClose={() => setShowNewTripModal(false)}
